@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "./lib"
+      component: "lib:my-template"
+
+    - path: "./app/Main.hs"
+      component: "my-template:exe:my-template"
+
+    - path: "./test"
+      component: "my-template:test:spec"
+
+    - path: "./test"
+      component: "my-template:test:doctests"

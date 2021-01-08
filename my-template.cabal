@@ -1,0 +1,97 @@
+cabal-version:      2.4
+name:               my-template
+version:            0.1.0.0
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Hogeyama
+maintainer:         gan13027830@gmail.com
+extra-source-files: CHANGELOG.md
+build-type:         Custom
+
+custom-setup
+  setup-depends:
+    , base
+    , Cabal
+    , cabal-doctest
+    , hspec
+
+common shared-properties
+  default-language:   Haskell2010
+  default-extensions:
+    BangPatterns
+    BinaryLiterals
+    BlockArguments
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveLift
+    DeriveTraversable
+    DerivingVia
+    EmptyCase
+    EmptyDataDecls
+    EmptyDataDeriving
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    FunctionalDependencies
+    GADTs
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NamedFieldPuns
+    OverloadedLabels
+    OverloadedStrings
+    PatternSynonyms
+    PolyKinds
+    RankNTypes
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    StrictData
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeFamilyDependencies
+    TypeOperators
+    ViewPatterns
+
+  build-depends:      base ^>=4.14.1.0
+  ghc-options:
+    -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+    -Wmissing-import-lists -Wcompat
+
+library
+  import:          shared-properties
+
+  -- cabal-fmt: expand lib
+  exposed-modules: MyLib
+  build-depends:   base ^>=4.14.1.0
+  hs-source-dirs:  lib
+
+executable my-template
+  import:         shared-properties
+  main-is:        Main.hs
+  build-depends:  my-template
+  hs-source-dirs: app
+
+test-suite spec
+  import:         shared-properties
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Spec.hs
+  build-depends:
+    , hspec
+    , my-template
+
+test-suite doctests
+  import:         shared-properties
+  type:           exitcode-stdio-1.0
+  main-is:        Doctests.hs
+  hs-source-dirs: test
+  build-depends:  doctest
+  ghc-options:    -Wno-missing-import-lists
