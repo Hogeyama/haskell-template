@@ -97,7 +97,6 @@ library
 
   -- cabal-fmt: expand lib
   exposed-modules: MyLib
-  build-depends:   base ^>=4.14.1.0
   hs-source-dirs:  lib
 
 executable my-template
