@@ -3,7 +3,6 @@ all: setup build test lint
 .PHONY: setup
 setup:
 	cabal v2-update
-	cabal v2-install hlint weeder
 	cabal v2-build --dependencies-only
 
 .PHONY: build
@@ -25,10 +24,9 @@ doctest:
 spectest:
 	cabal v2-test spec
 
-.PHONY: lint
-lint:
-	hlint app lib
-	weeder
+.PHONY: bench
+bench:
+	cabal v2-bench
 
 .PHONY: clean
 clean:
@@ -38,6 +36,21 @@ clean:
 doc:
 	cabal v2-haddock
 
-.PHONY: cabal-fmt
-cabal-fmt:
+.PHONY: lint
+lint:
+	hlint app lib
+
+.PHONY: format
+format: format-src format-cabal
+
+.PHONY: format-cabal
+format-cabal:
 	cabal-fmt my-template.cabal -i
+
+.PHONY: format-src
+format-src:
+	stylish-haskell -ir app
+	stylish-haskell -ir lib
+	stylish-haskell -ir test
+	stylish-haskell -ir benchmark
+

@@ -1,6 +1,7 @@
 module Main where
-import Build_doctests (flags, module_sources, pkgs)
-import Test.DocTest   (doctest)
+import           Build_doctests (flags, module_sources, pkgs)
+import           RIO
+import           Test.DocTest   (doctest)
 main :: IO ()
 main = doctest args
   where

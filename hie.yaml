@@ -11,3 +11,6 @@ cradle:
 
     - path: "./test"
       component: "my-template:test:doctests"
+
+    - path: "./benchmark/Main.hs"
+      component: "my-template:bench:benchmark"
