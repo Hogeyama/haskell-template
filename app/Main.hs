@@ -5,6 +5,5 @@ import           RIO
 
 main :: IO ()
 main = do
-  hPutBuilder         stdout
-        "Hello, Haskell!"
+  hPutBuilder stdout "Hello, Haskell!"
   MyLib.someFunc
