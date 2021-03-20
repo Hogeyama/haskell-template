@@ -1,4 +1,5 @@
 cabal.project.local
-dist-newstyle
-.stack-work
-.hie
+dist-newstyle/
+.stack-work/
+.hie/
+result/

@@ -1,7 +1,7 @@
 module Main (main) where
 
 import qualified MyLib (someFunc)
-import           RIO
+import RIO
 
 main :: IO ()
 main = do

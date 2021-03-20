@@ -20,7 +20,6 @@ tested-with:     GHC ==8.6.5 || ==8.8.3 || ==8.10.1
 custom-setup
   setup-depends:
     , base
-    , Cabal
     , cabal-doctest
     , hspec
 
@@ -114,7 +113,8 @@ test-suite spec
   -- cabal-fmt: expand test -Spec -Doctests
   other-modules:      MyLibSpec
   main-is:            Spec.hs
-  build-tool-depends: hspec-discover:hspec-discover -any
+  -- No need to specify build-tool-depends because we manage them by nix.
+  -- build-tool-depends: hspec-discover:hspec-discover -any
 
   if impl(ghc >=8.4)
     ghc-options: -Wno-missing-export-lists
@@ -127,7 +127,7 @@ test-suite spec
     , QuickCheck
     , my-template
 
-test-suite doctests
+test-suite doctest
   import:         common-options
   type:           exitcode-stdio-1.0
   main-is:        Doctests.hs
