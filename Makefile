@@ -18,7 +18,7 @@ test: doctest spectest
 
 .PHONY: doctest
 doctest:
-	cabal v2-test doctest
+	cabal v2-test doctests
 
 .PHONY: spectest
 spectest:
@@ -34,7 +34,7 @@ clean:
 
 .PHONY: doc
 doc:
-	cabal v2-haddock
+	cabal v2-haddock --haddock-hyperlink-source
 
 .PHONY: lint
 lint:

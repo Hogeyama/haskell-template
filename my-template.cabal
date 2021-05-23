@@ -124,6 +124,7 @@ test-suite spec
 
   build-depends:
     , hspec
+    , QuickCheck
     , my-template
 
 test-suite doctests
