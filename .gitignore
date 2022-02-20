@@ -2,4 +2,7 @@ cabal.project.local
 dist-newstyle/
 .stack-work/
 .hie/
-result/
+.ghc.environment.*
+result
+.local
+.vim
