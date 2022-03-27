@@ -13,7 +13,7 @@ jobs:
       - name: Fix permission of /nix/store
         run: |
           sudo mkdir -p /nix/store
-          #sudo chown -R $(whoami) /nix/store
+          sudo chown -R $(whoami) /nix/store
           sudo chmod -R a+rwx     /nix/store
 
       - name: Cache /nix/store
