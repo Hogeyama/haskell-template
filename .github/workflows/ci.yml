@@ -23,7 +23,7 @@ jobs:
       - name: Cache /nix/store
         uses: actions/cache@v2
         env:
-          cache-name: cache-nix-store
+          cache-name: tmp
         with:
           path: |
             /nix/store
