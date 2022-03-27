@@ -17,7 +17,7 @@ jobs:
 
       - name: Fix permission of /nix/store
         run: |
-          sudo mkdir /nix/store
+          sudo mkdir -p /nix/store
           sudo chmod -R a+rwx /nix/store
 
       - name: Cache /nix/store
