@@ -1,7 +1,8 @@
 module MyLibSpec (spec) where
-import           MyLib
-import           RIO
-import           Test.Hspec
+
+import MyLib
+import RIO
+import Test.Hspec
 
 spec :: Spec
 spec = do

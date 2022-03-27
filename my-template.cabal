@@ -108,9 +108,9 @@ executable my-template
 test-suite spec
   import:         common-options
   type:           exitcode-stdio-1.0
-  hs-source-dirs: test
+  hs-source-dirs: test/spec
 
-  -- cabal-fmt: expand test -Spec -Doctests
+  -- cabal-fmt: expand test -Spec
   other-modules:  MyLibSpec
   main-is:        Spec.hs
 
@@ -131,8 +131,8 @@ test-suite spec
 test-suite doctest
   import:         common-options
   type:           exitcode-stdio-1.0
-  main-is:        Doctests.hs
-  hs-source-dirs: test
+  main-is:        Doctest.hs
+  hs-source-dirs: test/doctest
   ghc-options:    -Wno-missing-import-lists
   build-depends:  doctest
 
