@@ -12,12 +12,12 @@ jobs:
       - name: "Cache: prepare /nix/store"
         run: |
           sudo mkdir -p /nix/store
-          sudo chown -R $(whoami) /nix/store
+          sudo chown -R $(whoami):$(whoami) /nix/store
 
       - name: "Cache /nix/store"
         uses: actions/cache@v2
         env:
-          cache-name: tmp4
+          cache-name: tmp6
         with:
           path: |
             /nix/store
@@ -30,7 +30,7 @@ jobs:
 
       - name: "Cache: let /nix/store owned by root"
         run: |
-          sudo chown -R root /nix/store
+          sudo chown -R root:nixbld /nix/store
           ls -l /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
 
       - name: "Install nix"
@@ -55,4 +55,4 @@ jobs:
       # Since actions/cache@v2 runs as runner, /nix/store should be owned by runner
       - name: "Cache: let /nix/store owned by runner"
         run: |
-          sudo chown -R $(whoami) /nix/store
+          sudo chown -R $(whoami):$(whoami) /nix/store
