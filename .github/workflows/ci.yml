@@ -15,6 +15,20 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
+      - name: Cache /nix/store
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-nix-store
+        with:
+          path: |
+            /nix/store
+          key: ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}-${{ hashFiles('**/*.cabal') }}
+          restore-keys: |
+            ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}-${{ hashFiles('**/*.cabal') }}
+            ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}
+            ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}
+            ${{ env.cache-name }}
+
       - name: Build and test
         run: nix build
 
