@@ -43,14 +43,17 @@ jobs:
           ls -l /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
 
       - name: "Build and test"
-        run: nix build
+        run: |
+          nix build
 
       - name: Check /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108
         run: |
           ls -l /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
 
       - name: "Build and test (flake)"
-        run: nix flake check
+        run: |
+          touch /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108
+          nix flake check
 
       # Since actions/cache@v2 runs as runner, /nix/store should be owned by runner
       - name: "Cache: let /nix/store owned by runner"
