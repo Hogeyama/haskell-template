@@ -30,6 +30,12 @@ jobs:
             ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}
             ${{ env.cache-name }}
 
+      - name: Restore permission of /nix/store
+        run: |
+          ls -la /nix/store
+          sudo chown -R root /nix/store
+          # sudo chmod -R a+rwx     /nix/store
+
       - name: Install nix
         uses: cachix/install-nix-action@v16
         with:
