@@ -35,7 +35,7 @@ jobs:
 
       - name: "Cache: let /nix/store owned by root"
         run: |
-          sudo chown -R root:nixbld /nix/store
+          sudo chown -R root:root /nix/store
           ls -ld /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
           lsblk
 
