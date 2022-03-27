@@ -1,7 +1,6 @@
 name: nix build
 on:
   pull_request:
-  # push:
   workflow_dispatch:
 jobs:
   tests:
@@ -32,6 +31,8 @@ jobs:
       - name: "Cache: let /nix/store owned by root"
         run: |
           sudo chown -R root /nix/store
+          file /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
+          ls -la /nix/store
 
       - name: "Install nix"
         uses: cachix/install-nix-action@v16
