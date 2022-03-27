@@ -1,10 +1,5 @@
 all: setup build test lint
 
-.PHONY: setup
-setup:
-	cabal v2-update
-	cabal v2-build --dependencies-only
-
 .PHONY: build
 build:
 	cabal v2-build
@@ -49,8 +44,4 @@ format-cabal:
 
 .PHONY: format-src
 format-src:
-	stylish-haskell -ir app
-	stylish-haskell -ir lib
-	stylish-haskell -ir test
-	stylish-haskell -ir benchmark
-
+	find . | grep '^./\(app\|lib\|test\).*\.hs' | xargs -n1 fourmolu -i

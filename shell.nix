@@ -14,6 +14,7 @@ let
       cabal-install
       haskellPackages.cabal-fmt
       haskellPackages.fourmolu
+      haskellPackages.hlint
       (haskell-language-server.override {
         supportedGhcVersions = [ compiler-version ];
       })
