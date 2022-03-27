@@ -37,10 +37,7 @@ jobs:
         run: |
           sudo chown -R root:nixbld /nix/store
           ls -l /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
-
-      - name: Check /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108
-        run: |
-          ls -l /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
+          df
 
       - name: "Build and test"
         run: |
