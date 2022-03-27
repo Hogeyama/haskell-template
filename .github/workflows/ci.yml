@@ -37,7 +37,7 @@ jobs:
         run: |
           sudo chown -R root:nixbld /nix/store
           ls -ld /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
-          df
+          lsblk
 
       - name: "Build and test"
         run: |
@@ -46,10 +46,10 @@ jobs:
       - name: Check /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108
         run: |
           ls -ld /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108 || true
+          lsblk
 
       - name: "Build and test (flake)"
         run: |
-          ls -ld /nix/store/ahzi8gfj34762a0yccafanspwylqj1z4-glibc-locales-2.33-108
           nix flake check
 
       # Since actions/cache@v2 runs as runner, /nix/store should be owned by runner
