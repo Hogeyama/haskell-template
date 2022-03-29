@@ -21,7 +21,4 @@ jobs:
           key: 1-nix-${{ hashFiles('flake.nix') }}
 
       - name: Build and test
-        run: nix build
-
-      - name: Build and test (flake)
-        run: nix flake check
+        run: nix-build
