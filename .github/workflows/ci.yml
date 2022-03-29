@@ -24,7 +24,6 @@ jobs:
         with:
           path: |
             /nix/store/**
-            # Missing something?
             /nix/var/nix/*/*
             /nix/var/nix/db/*
             /nix/var/nix/db/*/**
@@ -34,6 +33,12 @@ jobs:
             !/nix/var/nix/db/big-lock
             !/nix/var/nix/db/reserved
           key: ${{ runner.os }}-nix-store
+          # key: ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}-${{ hashFiles('**/*.cabal') }}
+          # restore-keys: |
+          #   ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}-${{ hashFiles('**/*.cabal') }}
+          #   ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}-${{ hashFiles('./flake.nix') }}
+          #   ${{ env.cache-name }}-${{ hashFiles('./flake.lock') }}
+          #   ${{ env.cache-name }}
 
       - name: "Install nix"
         uses: cachix/install-nix-action@v16
