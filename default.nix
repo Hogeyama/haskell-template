@@ -1,23 +1,10 @@
-{ pkgs
-, compiler
-}:
-let
-  src = pkgs.lib.sourceByRegex ./. [
-    "app"
-    "app/.*"
-    "lib"
-    "lib/.*"
-    "test"
-    "test/.*"
-    "benchmark"
-    "benchmark/.*"
-    "Setup.hs"
-    "my-template.cabal"
-    "README.md"
-    "CHANGELOG.md"
-    "LICENSE"
-  ];
-  haskPkgs = pkgs.haskell.packages.${compiler};
-  drv = haskPkgs.callCabal2nix "my-template" src { };
-in
-drv
+(import
+  (
+    let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  { src = ./.; }
+).defaultNix

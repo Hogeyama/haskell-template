@@ -1,24 +1,10 @@
-{ pkgs
-, compiler
-}:
-let
-  # ghcXYZ→XYZ
-  compiler-version =
-    builtins.substring 3 (builtins.stringLength compiler) compiler;
-  haskPkgs = pkgs.haskell.packages.${compiler};
-  shell = haskPkgs.shellFor {
-    withHoogle = true;
-    packages = _: [ pkgs.my-package ];
-    buildInputs = with pkgs; [
-      nixfmt
-      cabal-install
-      haskellPackages.cabal-fmt
-      haskellPackages.fourmolu
-      haskellPackages.hlint
-      (haskell-language-server.override {
-        supportedGhcVersions = [ compiler-version ];
-      })
-    ];
-  };
-in
-shell
+(import
+  (
+    let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  { src = ./.; }
+).shellNix
