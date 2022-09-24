@@ -9,7 +9,7 @@
 ## Repogitory setup
 
 * Create git repogitory using this template
-* `mv ./hoge.cabal ./<your-package>.cabal`
+* `mv ./my-template.cabal ./<your-package>.cabal`
 * `find . -type f -not -path '*/.* | xargs sed -i -e 's/my-template/<your-package>/g'`
 * Update README
 
