@@ -12,7 +12,7 @@
 
   outputs = { self, nixpkgs, flake-utils, ...}:
     let
-      compiler = "ghc921";
+      compiler = "ghc924";
       supportedSystems = [ "x86_64-linux" ];
 
       outputs-overlay = pkgs: prev: {
