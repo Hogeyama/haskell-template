@@ -10,12 +10,47 @@
 
   outputs = { nixpkgs, flake-utils, ... }:
     let
-      compiler = "ghc924";
+      compiler-version = "924";
       supportedSystems = [ "x86_64-linux" ];
 
       outputs-overlay = pkgs: prev: {
-        my-package = import ./nix/my-package.nix { inherit pkgs compiler; };
-        my-shell = import ./nix/my-shell.nix { inherit pkgs compiler; };
+        haskPkgs = pkgs.haskell.packages."ghc${compiler-version}".override {
+          overrides = self: super: {
+            my-package =
+              let
+                src = pkgs.lib.sourceByRegex ./. [
+                  "app"
+                  "app/.*"
+                  "lib"
+                  "lib/.*"
+                  "test"
+                  "test/.*"
+                  "benchmark"
+                  "benchmark/.*"
+                  "Setup.hs"
+                  "my-template.cabal"
+                  "README.md"
+                  "CHANGELOG.md"
+                  "LICENSE"
+                ];
+              in
+              pkgs.haskellPackages.callCabal2nix "my-template" src { };
+            my-shell = self.shellFor {
+              withHoogle = true;
+              packages = _: [ self.my-package ];
+              buildInputs = with pkgs; [
+                nixfmt
+                cabal-install
+                haskellPackages.cabal-fmt
+                haskellPackages.fourmolu
+                haskellPackages.hlint
+                (haskell-language-server.override {
+                  supportedGhcVersions = [ compiler-version ];
+                })
+              ];
+            };
+          };
+        };
       };
     in
     flake-utils.lib.eachSystem supportedSystems (system:
