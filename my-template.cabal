@@ -57,49 +57,25 @@ common common-options
       -Wforall-identifier -Wgadt-mono-local-binds -Wforall-identifier
       -Wtype-equality-out-of-scope -Wtype-equality-requires-operators
 
-  default-language:   Haskell2010
+  default-language:   GHC2021
   default-extensions:
-    NoImplicitPrelude
-    BangPatterns
-    BinaryLiterals
     BlockArguments
-    ConstraintKinds
-    DataKinds
-    DefaultSignatures
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveLift
-    DeriveTraversable
     DerivingVia
-    EmptyCase
-    EmptyDataDecls
-    EmptyDataDeriving
-    ExistentialQuantification
-    FlexibleContexts
-    FlexibleInstances
+    DataKinds
     FunctionalDependencies
-    GADTs
-    InstanceSigs
-    KindSignatures
     LambdaCase
-    MultiParamTypeClasses
-    MultiWayIf
-    NamedFieldPuns
+    GADTs
+    NoImplicitPrelude
+    RecordWildCards
+    StrictData
+    ViewPatterns
     OverloadedLabels
     OverloadedStrings
+    DefaultSignatures
+    MultiWayIf
     PatternSynonyms
-    PolyKinds
-    RankNTypes
-    RecordWildCards
-    ScopedTypeVariables
-    StandaloneDeriving
-    StrictData
-    TupleSections
-    TypeApplications
     TypeFamilies
     TypeFamilyDependencies
-    TypeOperators
-    ViewPatterns
 
 library
   import:          common-options
