@@ -2,7 +2,7 @@
   description = "TODO";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/master";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils/master";
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
@@ -10,7 +10,7 @@
 
   outputs = { nixpkgs, flake-utils, ... }:
     let
-      compiler-version = "924";
+      compiler-version = "944";
       supportedSystems = [ "x86_64-linux" ];
 
       outputs-overlay = pkgs: prev: {
@@ -49,6 +49,18 @@
                 })
               ];
             };
+            async = pkgs.haskell.lib.overrideCabal
+              (self.callHackageDirect
+                {
+                  pkg = "async";
+                  ver = "2.2.4";
+                  sha256 = "sha256-pYBuzx0NRMcvZtxmMeKZSXwyVvTVoHy5LwfvTTf2XnI=";
+                }
+                { })
+              (drv: {
+                editedCabalFile = "sha256-RjZ9wMgybcvre5PyALVnSRwvYCm8z4Iri7Ju5mA5fgg=";
+                revision = "3"; # allow base-4.18
+              });
           };
         };
       };
