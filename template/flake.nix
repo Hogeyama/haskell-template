@@ -6,9 +6,12 @@
     flake-utils.url = "github:numtide/flake-utils/main";
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
+    nix-bundle-elf.url = "github:Hogeyama/nix-bundle-elf/main";
+    nix-bundle-elf.inputs.nixpkgs.follows = "nixpkgs";
+    nix-bundle-elf.inputs.flake-utils.follows = "flake-utils";
   };
 
-  outputs = { nixpkgs, flake-utils, ... }:
+  outputs = { nixpkgs, flake-utils, nix-bundle-elf, ... }:
     let
       compiler-version = "944";
       supportedSystems = [ "x86_64-linux" ];
@@ -77,8 +80,17 @@
         };
       in
       {
-        packages.default = pkgs.haskPkgs.my-package;
-        devShells.default = pkgs.haskPkgs.my-shell;
+        packages = {
+          default = pkgs.haskPkgs.my-package;
+          bundled = nix-bundle-elf.lib.${system}.bundle-elf {
+            inherit pkgs;
+            name = "my-package-bundled";
+            target = "${pkgs.haskPkgs.my-package}/bin/my-template";
+          };
+        };
+        devShells = {
+          default = pkgs.haskPkgs.my-shell;
+        };
       }
     );
 }
