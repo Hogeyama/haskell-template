@@ -1,4 +1,4 @@
-all: setup build test lint
+all: build test lint
 
 .PHONY: build
 build:
@@ -44,4 +44,6 @@ format-cabal:
 
 .PHONY: format-src
 format-src:
-	find . | grep '^./\(app\|lib\|test\).*\.hs' | xargs -n1 fourmolu -i
+	find . \
+	  -regex '\./\(app\|lib\|test\|benchmark\).*\.hs' \
+	  -exec fourmolu -i {} +
