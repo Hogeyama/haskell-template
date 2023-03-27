@@ -22,10 +22,7 @@ custom-setup
     , hspec
 
 common common-options
-  build-depends:
-    , base  >=4.11.1.0
-    , rio
-
+  build-depends:      rio
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
     -Wincomplete-record-updates
@@ -120,7 +117,9 @@ test-suite doctest
   main-is:        Doctest.hs
   hs-source-dirs: test/doctest
   ghc-options:    -Wno-missing-import-lists
-  build-depends:  doctest
+  build-depends:
+    , base
+    , doctest
 
   if impl(ghc >=8.4)
     ghc-options: -Wno-missing-export-lists
