@@ -34,10 +34,14 @@
                   "LICENSE"
                 ];
               in
-              pkgs.haskellPackages.callCabal2nix "my-template" src { };
+              pkgs.lib.trivial.pipe (self.callCabal2nix "my-template" src { }) [
+                pkgs.haskell.lib.justStaticExecutables
+                pkgs.haskell.lib.doBenchmark
+              ];
             my-shell = self.shellFor {
               withHoogle = true;
               packages = _: [ self.my-package ];
+              doBenchmark = true;
               buildInputs = with pkgs; [
                 nixfmt
                 cabal-install
