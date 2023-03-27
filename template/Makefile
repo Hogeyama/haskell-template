@@ -13,7 +13,7 @@ test: doctest spectest
 
 .PHONY: doctest
 doctest:
-	cabal v2-test doctests
+	cabal v2-test doctest
 
 .PHONY: spectest
 spectest:
