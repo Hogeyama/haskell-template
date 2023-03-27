@@ -59,23 +59,23 @@ common common-options
 
   default-language:   GHC2021
   default-extensions:
-    BlockArguments
-    DerivingVia
-    DataKinds
-    FunctionalDependencies
-    LambdaCase
-    GADTs
     NoImplicitPrelude
-    RecordWildCards
-    StrictData
-    ViewPatterns
+    BlockArguments
+    DataKinds
+    DefaultSignatures
+    DerivingVia
+    FunctionalDependencies
+    GADTs
+    LambdaCase
+    MultiWayIf
     OverloadedLabels
     OverloadedStrings
-    DefaultSignatures
-    MultiWayIf
     PatternSynonyms
+    RecordWildCards
+    StrictData
     TypeFamilies
     TypeFamilyDependencies
+    ViewPatterns
 
 library
   import:          common-options

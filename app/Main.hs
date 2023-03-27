@@ -1,6 +1,6 @@
 module Main (main) where
 
-import qualified MyLib (someFunc)
+import MyLib qualified (someFunc)
 import RIO
 
 main :: IO ()
