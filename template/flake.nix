@@ -1,5 +1,5 @@
 {
-  description = "TODO";
+  description = "Sample Haskell project";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
