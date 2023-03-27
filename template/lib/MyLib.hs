@@ -1,10 +1,10 @@
-module MyLib (someFunc) where
+module MyLib (hello) where
 
 import RIO
 
 -- | Some function
 --
--- >>> someFunc
--- someFunc
-someFunc :: IO ()
-someFunc = hPutBuilder stdout "someFunc"
+-- >>> hello
+-- Hello World!
+hello :: IO ()
+hello = hPutBuilder stdout "Hello World!\n"

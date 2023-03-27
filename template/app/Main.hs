@@ -1,9 +1,8 @@
 module Main (main) where
 
-import MyLib qualified (someFunc)
 import RIO
 
+import MyLib qualified (hello)
+
 main :: IO ()
-main = do
-  hPutBuilder stdout "Hello, Haskell!"
-  MyLib.someFunc
+main = MyLib.hello

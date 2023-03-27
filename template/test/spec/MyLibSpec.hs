@@ -8,4 +8,4 @@ spec :: Spec
 spec = do
   describe "someFunc" $ do
     it "should return unit" $ do
-      someFunc `shouldReturn` ()
+      hello `shouldReturn` ()
