@@ -61,6 +61,7 @@
         shell-for-my-sample = haskellPackages.shellFor {
           packages = _: [ my-sample ];
           buildInputs = with pkgs; [
+            arion
             cabal-install
             haskellPackages.cabal-fmt
             haskellPackages.fourmolu
@@ -98,6 +99,7 @@
         devShells = {
           default = pkgs.shell-for-my-sample;
         };
+        legacyPackages = pkgs;
       }
     );
 }

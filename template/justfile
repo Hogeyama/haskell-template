@@ -5,13 +5,30 @@ all: build test lint
 build:
   cabal v2-build
 
-test: doctest spec-test
+test: doctest spec-test integration-test
 
 doctest:
   cabal v2-test doctest
 
 spec-test:
   cabal v2-test spec
+
+integration-test:
+  #!/usr/bin/env bash
+  header() {
+    if [[ -t 1 ]]; then
+      echo -e "\e[1;4m$*\e[0m"
+    else
+      echo "$*"
+    fi
+  }
+  trap 'header [Cleaning up...]; arion down' EXIT
+  header "[Building containerized test environment...]"
+  arion build
+  header "[Starting containerized test environment...]"
+  arion up -d webserver
+  header "[Running tests...]"
+  arion run test
 
 lint:
   hlint app lib
