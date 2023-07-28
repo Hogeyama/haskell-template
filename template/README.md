@@ -19,12 +19,6 @@
 nix build
 ```
 
-If your `nix` command does not support flake,
-
-```
-nix-build
-```
-
 ## Development
 
 ```
@@ -32,12 +26,6 @@ direnv allow
 ```
 
 And you have `ghc`, `cabal`, `haskell-language-server` and so on.
-
-If your `nix` command does not support flake, try
-
-```
-nix-shell
-```
 
 If your `nix` command supports flake but your `direnv` does not support `use flake` command, try
 
