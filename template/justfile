@@ -52,3 +52,15 @@ doc:
 
 bench:
   cabal v2-bench
+
+# arion lacks some features and options of docker-compose,
+# so we use a wrapper script to pass through.
+# e.g. `just docker-compose exec -it webserver bash`
+docker-compose *args:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  project=$(nix eval --impure --expr \
+    '(import ./arion-compose.nix {pkgs={};}).config.project.name' |
+    xargs echo \
+  )
+  docker compose --file <(arion config) --project-name "$project" "$@"
