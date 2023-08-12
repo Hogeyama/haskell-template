@@ -18,7 +18,21 @@
 
       outputs-overlay = pkgs: prev: rec {
         haskellPackages = pkgs.haskell.packages."ghc${compiler-version}".override {
-          overrides = self: super: { };
+          overrides = self: super: {
+            # Add dependencies here if necessary. For example:
+            # async = pkgs.haskell.lib.overrideCabal
+            #   (self.callHackageDirect
+            #     {
+            #       pkg = "async";
+            #       ver = "2.2.4";
+            #       sha256 = "sha256-pYBuzx0NRMcvZtxmMeKZSXwyVvTVoHy5LwfvTTf2XnI=";
+            #     }
+            #     { })
+            #   (drv: {
+            #     editedCabalFile = "sha256-RjZ9wMgybcvre5PyALVnSRwvYCm8z4Iri7Ju5mA5fgg=";
+            #     revision = "3";
+            #   });
+          };
         };
         my-sample =
           let
