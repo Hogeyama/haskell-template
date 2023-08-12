@@ -1,0 +1,36 @@
+set positional-arguments := true
+
+all: build test lint
+
+build:
+  cabal v2-build
+
+test: doctest spec-test
+
+doctest:
+  cabal v2-test doctest
+
+spec-test:
+  cabal v2-test spec
+
+lint:
+  hlint app lib
+
+clean:
+  cabal v2-clean
+
+format: format-src format-cabal
+
+format-src:
+  find . \
+    -regex '\./\(app\|lib\|test\|benchmark\).*\.hs' \
+    -exec fourmolu -i {} +
+
+format-cabal:
+  cabal-fmt *.cabal -i
+
+doc:
+  cabal v2-haddock --haddock-hyperlink-source
+
+bench:
+  cabal v2-bench
