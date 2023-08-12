@@ -1,4 +1,4 @@
-# Revision history for my-template
+# Revision history for my-sample
 
 ## 0.1.0.0 -- YYYY-mm-dd
 

@@ -19,7 +19,7 @@
       outputs-overlay = pkgs: prev: {
         haskPkgs = pkgs.haskell.packages."ghc${compiler-version}".override {
           overrides = self: super: {
-            my-package =
+            my-sample =
               let
                 src = pkgs.lib.sourceByRegex ./. [
                   "app"
@@ -31,22 +31,21 @@
                   "benchmark"
                   "benchmark/.*"
                   "Setup.hs"
-                  "my-template.cabal"
+                  ".*.cabal"
                   "README.md"
                   "CHANGELOG.md"
                   "LICENSE"
                 ];
               in
-              pkgs.lib.trivial.pipe (self.callCabal2nix "my-template" src { }) [
-                pkgs.haskell.lib.justStaticExecutables
-                pkgs.haskell.lib.doBenchmark
-              ];
-            my-shell = self.shellFor {
-              withHoogle = true;
-              packages = _: [ self.my-package ];
-              doBenchmark = true;
+              pkgs.lib.trivial.pipe
+                (self.callCabal2nix "my-sample" src { })
+                [
+                  pkgs.haskell.lib.justStaticExecutables
+                  pkgs.haskell.lib.doBenchmark
+                ];
+            shell-for-my-sample = self.shellFor {
+              packages = hpkgs: [ hpkgs.my-sample ];
               buildInputs = with pkgs; [
-                nixfmt
                 cabal-install
                 haskellPackages.cabal-fmt
                 haskellPackages.fourmolu
@@ -55,6 +54,8 @@
                   supportedGhcVersions = [ compiler-version ];
                 })
               ];
+              withHoogle = true;
+              doBenchmark = true;
             };
             async = pkgs.haskell.lib.overrideCabal
               (self.callHackageDirect
@@ -81,15 +82,15 @@
       in
       {
         packages = {
-          default = pkgs.haskPkgs.my-package;
+          default = pkgs.haskPkgs.my-sample;
           bundled = nix-bundle-elf.lib.${system}.bundle-elf {
             inherit pkgs;
-            name = "my-package-bundled";
-            target = "${pkgs.haskPkgs.my-package}/bin/my-template";
+            name = "my-sample-bundled";
+            target = "${pkgs.haskPkgs.my-sample}/bin/my-sample";
           };
         };
         devShells = {
-          default = pkgs.haskPkgs.my-shell;
+          default = pkgs.haskPkgs.shell-for-my-sample;
         };
       }
     );

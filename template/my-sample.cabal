@@ -1,5 +1,5 @@
 cabal-version:   2.4
-name:            my-template
+name:            my-sample
 version:         0.1.0.0
 synopsis:        Project Template for Haskell
 description:     See README for more info
@@ -81,10 +81,10 @@ library
   exposed-modules: MyLib
   hs-source-dirs:  lib
 
-executable my-template
+executable my-sample
   import:         common-options
   main-is:        Main.hs
-  build-depends:  my-template
+  build-depends:  my-sample
   hs-source-dirs: app
   ghc-options:    -threaded -rtsopts -with-rtsopts=-N
 
@@ -108,7 +108,7 @@ test-suite spec
 
   build-depends:
     , hspec
-    , my-template
+    , my-sample
     , QuickCheck
 
 test-suite doctest
@@ -135,4 +135,4 @@ benchmark benchmark
   ghc-options:    -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     , gauge
-    , my-template
+    , my-sample

@@ -9,8 +9,8 @@
 ## Repogitory setup
 
 * Create git repogitory using this template
-* `mv ./my-template.cabal ./<your-package>.cabal`
-* `find . -type f -not -path '*/.* | xargs sed -i -e 's/my-template/<your-package>/g'`
+* `mv ./my-sample.cabal ./<your-package>.cabal`
+* `find . -type f -not -path '*/.*' | xargs sed -i -e 's/my-sample/<your-package>/g'`
 * Update README
 
 ## Build

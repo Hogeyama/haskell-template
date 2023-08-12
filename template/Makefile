@@ -40,7 +40,7 @@ format: format-src format-cabal
 
 .PHONY: format-cabal
 format-cabal:
-	cabal-fmt my-template.cabal -i
+	cabal-fmt my-sample.cabal -i
 
 .PHONY: format-src
 format-src:
