@@ -25,6 +25,8 @@ common common-options
   build-depends:
     , base
     , rio
+    -- for doctest using hls
+    , silently
 
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
