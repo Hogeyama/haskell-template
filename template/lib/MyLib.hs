@@ -1,4 +1,4 @@
-module MyLib (hello) where
+module MyLib (hello, sayHello) where
 
 import RIO
 
@@ -7,7 +7,10 @@ import RIO
 
 -- | Some function
 --
--- >>> capture_ hello
--- "Hello World!\n"
-hello :: IO ()
-hello = hPutBuilder stdout "Hello World!\n"
+-- >>> capture_ sayHello
+-- "Hello World!"
+sayHello :: IO ()
+sayHello = hPutBuilder stdout . fromString $ hello "World"
+
+hello :: String -> String
+hello name = "Hello " <> name <> "!"

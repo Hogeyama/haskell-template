@@ -9,7 +9,7 @@ spec :: Spec
 spec = do
   describe "someFunc" $ do
     it "should return unit" $ do
-      hello `shouldReturn` ()
+      sayHello `shouldReturn` ()
   describe "(+) @Int" $ do
     it "is commutative" $ property $ do
       \(x :: Int) (y :: Int) -> do

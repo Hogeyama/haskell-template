@@ -25,9 +25,9 @@ common common-options
   build-depends:
     , base
     , rio
-    -- for doctest using hls
     , silently
 
+  -- for doctest using hls
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
     -Wincomplete-record-updates
@@ -89,7 +89,11 @@ library
 executable my-sample
   import:         common-options
   main-is:        Main.hs
-  build-depends:  my-sample
+  build-depends:
+    , aeson
+    , my-sample
+    , scotty
+
   hs-source-dirs: app
   ghc-options:    -threaded -rtsopts -with-rtsopts=-N
 
