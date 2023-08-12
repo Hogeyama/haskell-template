@@ -16,60 +16,47 @@
       compiler-version = "944";
       supportedSystems = [ "x86_64-linux" ];
 
-      outputs-overlay = pkgs: prev: {
-        haskPkgs = pkgs.haskell.packages."ghc${compiler-version}".override {
-          overrides = self: super: {
-            my-sample =
-              let
-                src = pkgs.lib.sourceByRegex ./. [
-                  "app"
-                  "app/.*"
-                  "lib"
-                  "lib/.*"
-                  "test"
-                  "test/.*"
-                  "benchmark"
-                  "benchmark/.*"
-                  "Setup.hs"
-                  ".*.cabal"
-                  "README.md"
-                  "CHANGELOG.md"
-                  "LICENSE"
-                ];
-              in
-              pkgs.lib.trivial.pipe
-                (self.callCabal2nix "my-sample" src { })
-                [
-                  pkgs.haskell.lib.justStaticExecutables
-                  pkgs.haskell.lib.doBenchmark
-                ];
-            shell-for-my-sample = self.shellFor {
-              packages = hpkgs: [ hpkgs.my-sample ];
-              buildInputs = with pkgs; [
-                cabal-install
-                haskellPackages.cabal-fmt
-                haskellPackages.fourmolu
-                haskellPackages.hlint
-                (haskell-language-server.override {
-                  supportedGhcVersions = [ compiler-version ];
-                })
-              ];
-              withHoogle = true;
-              doBenchmark = true;
-            };
-            async = pkgs.haskell.lib.overrideCabal
-              (self.callHackageDirect
-                {
-                  pkg = "async";
-                  ver = "2.2.4";
-                  sha256 = "sha256-pYBuzx0NRMcvZtxmMeKZSXwyVvTVoHy5LwfvTTf2XnI=";
-                }
-                { })
-              (drv: {
-                editedCabalFile = "sha256-RjZ9wMgybcvre5PyALVnSRwvYCm8z4Iri7Ju5mA5fgg=";
-                revision = "3"; # allow base-4.18
-              });
-          };
+      outputs-overlay = pkgs: prev: rec {
+        haskellPackages = pkgs.haskell.packages."ghc${compiler-version}".override {
+          overrides = self: super: { };
+        };
+        my-sample =
+          let
+            src = pkgs.lib.sourceByRegex ./. [
+              "app"
+              "app/.*"
+              "lib"
+              "lib/.*"
+              "test"
+              "test/.*"
+              "benchmark"
+              "benchmark/.*"
+              "Setup.hs"
+              ".*.cabal"
+              "README.md"
+              "CHANGELOG.md"
+              "LICENSE"
+            ];
+          in
+          pkgs.lib.trivial.pipe
+            (haskellPackages.callCabal2nix "my-sample" src { })
+            [
+              pkgs.haskell.lib.justStaticExecutables
+              pkgs.haskell.lib.doBenchmark
+            ];
+        shell-for-my-sample = haskellPackages.shellFor {
+          packages = _: [ my-sample ];
+          buildInputs = with pkgs; [
+            cabal-install
+            haskellPackages.cabal-fmt
+            haskellPackages.fourmolu
+            haskellPackages.hlint
+            (haskell-language-server.override {
+              supportedGhcVersions = [ compiler-version ];
+            })
+          ];
+          withHoogle = true;
+          doBenchmark = true;
         };
       };
     in
@@ -82,20 +69,20 @@
       in
       {
         packages = {
-          default = pkgs.haskPkgs.my-sample;
+          default = pkgs.my-sample;
           bundled-exe = nix-bundle-elf.lib.${system}.single-exe {
             inherit pkgs;
             name = "my-sample-bundled";
-            target = "${pkgs.haskPkgs.my-sample}/bin/my-sample";
+            target = "${pkgs.my-sample}/bin/my-sample";
           };
           bundled-aws-lambda = nix-bundle-elf.lib.${system}.aws-lambda-zip {
             inherit pkgs;
             name = "my-sample-bundled";
-            target = "${pkgs.haskPkgs.my-sample}/bin/my-sample";
+            target = "${pkgs.my-sample}/bin/my-sample";
           };
         };
         devShells = {
-          default = pkgs.haskPkgs.shell-for-my-sample;
+          default = pkgs.shell-for-my-sample;
         };
       }
     );
