@@ -83,7 +83,12 @@
       {
         packages = {
           default = pkgs.haskPkgs.my-sample;
-          bundled = nix-bundle-elf.lib.${system}.bundle-elf {
+          bundled-exe = nix-bundle-elf.lib.${system}.single-exe {
+            inherit pkgs;
+            name = "my-sample-bundled";
+            target = "${pkgs.haskPkgs.my-sample}/bin/my-sample";
+          };
+          bundled-aws-lambda = nix-bundle-elf.lib.${system}.aws-lambda-zip {
             inherit pkgs;
             name = "my-sample-bundled";
             target = "${pkgs.haskPkgs.my-sample}/bin/my-sample";
