@@ -31,7 +31,7 @@ integration-test:
   arion run test
 
 lint:
-  hlint app lib
+  hlint app lib test benchmark
   weeder
 
 clean:
