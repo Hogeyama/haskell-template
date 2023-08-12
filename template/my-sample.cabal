@@ -22,7 +22,10 @@ custom-setup
     , hspec
 
 common common-options
-  build-depends:      rio
+  build-depends:
+    , base
+    , rio
+
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-uni-patterns
     -Wincomplete-record-updates
