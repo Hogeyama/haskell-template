@@ -66,6 +66,7 @@
             haskellPackages.cabal-fmt
             haskellPackages.fourmolu
             haskellPackages.hlint
+            haskellPackages.weeder
             (haskell-language-server.override {
               supportedGhcVersions = [ compiler-version ];
             })

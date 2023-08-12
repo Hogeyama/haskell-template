@@ -1,0 +1,9 @@
+roots = [ "^Main.main$"
+        , "^MyLib.sayHello$"
+        # hspec-discover target
+        , "Spec.spec$"
+        # auto-generated files
+        , "^Paths_.*"
+        , "^Build_doctests.*"
+        ]
+type-class-roots = false
