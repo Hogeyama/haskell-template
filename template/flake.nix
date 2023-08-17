@@ -13,7 +13,7 @@
 
   outputs = { nixpkgs, flake-utils, nix-bundle-elf, ... }:
     let
-      compiler-version = "944";
+      compiler-version = "946";
       supportedSystems = [ "x86_64-linux" ];
 
       outputs-overlay = pkgs: prev: rec {
