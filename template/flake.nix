@@ -37,16 +37,12 @@
         my-sample =
           let
             src = pkgs.lib.sourceByRegex ./. [
-              "app"
-              "app/.*"
-              "lib"
-              "lib/.*"
-              "test"
-              "test/.*"
-              "benchmark"
-              "benchmark/.*"
+              "app(/.*)?"
+              "lib(/.*)?"
+              "test(/.*)?"
+              "benchmark(/.*)?"
               "Setup.hs"
-              ".*.cabal"
+              ".*\\.cabal"
               "README.md"
               "CHANGELOG.md"
               "LICENSE"
