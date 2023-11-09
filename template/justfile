@@ -7,13 +7,31 @@ default:
     just --unsorted --summary |
     sed 's# #\n#g' |
     grep -v default |
+    grep -v ^_ |
     fzf \
       --layout reverse \
       --preview 'echo && just --show {} | bat -f --language=bash --style=numbers' \
       --preview-window 'right:50%,border-none'
   )
-  just put bold "just $command"
-  just "$command"
+  has_args=$(
+    just --dump --dump-format json |
+    jq --arg cmd "$command" '.recipes[]|select(.name==$cmd).parameters|length>0'
+  )
+  if [[ "$has_args" == "true" ]]; then
+    export FZF_DEFAULT_COMMAND="echo 'Enter arguments' && just --show $command | bat -f --language=bash --style=plain"
+    args=$(
+      fzf \
+        --layout reverse \
+        --disabled \
+        --bind 'down:,up:,enter:print-query' \
+        --ansi
+    )
+    just put bold "just $command $args"
+    just "$command" $args
+  else
+    just put bold "just $command"
+    just "$command"
+  fi
 
 all: build test lint
 
