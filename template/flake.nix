@@ -8,6 +8,7 @@
     flake-compat.flake = false;
     nix-bundle-elf.url = "github:Hogeyama/nix-bundle-elf/main";
     nix-bundle-elf.inputs.nixpkgs.follows = "nixpkgs";
+    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
   };
 
   outputs = inputs@{ self, flake-parts, ... }:
@@ -70,7 +71,9 @@
       };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ];
+      imports = [
+        inputs.process-compose-flake.flakeModule
+      ];
       systems = [ "x86_64-linux" "aarch64-linux" ];
       perSystem = { config, lib, self', inputs', pkgs, system, ... }:
         {
@@ -78,6 +81,7 @@
             inherit system;
             overlays = [ outputs-overlay ];
           };
+
           packages = {
             default = pkgs.my-sample;
             bundled-exe = inputs.nix-bundle-elf.lib.${system}.single-exe {
@@ -91,9 +95,42 @@
               target = "${pkgs.my-sample}/bin/my-sample";
             };
           };
+
           devShells = {
             default = pkgs.shell-for-my-sample;
           };
+
+          process-compose."processes" =
+            {
+              settings = {
+                processes = {
+                  server = {
+                    command = ''
+                      ${lib.getExe pkgs.my-sample}
+                    '';
+                    readiness_probe = {
+                      period_seconds = 3;
+                      http_get = {
+                        host = "localhost";
+                        port = 3000;
+                        path = "/healthcheck";
+                      };
+                    };
+                  };
+                  test = {
+                    command = pkgs.writeShellApplication {
+                      name = "test";
+                      runtimeInputs = [ pkgs.curl ];
+                      text = ''
+                        ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
+                      '';
+                    };
+                    depends_on."server".condition = "process_healthy";
+                  };
+                };
+              };
+            };
+
           legacyPackages = pkgs;
         };
     };

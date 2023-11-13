@@ -109,12 +109,28 @@
         "type": "github"
       }
     },
+    "process-compose-flake": {
+      "locked": {
+        "lastModified": 1698517360,
+        "narHash": "sha256-u10MVmhHEqVa0u5TnZzeprjfZgB5H/2JDBoIyeNyR+c=",
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "rev": "ea1607cead57ce72dd06e178b4d55884a3be8854",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts",
         "nix-bundle-elf": "nix-bundle-elf",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "process-compose-flake": "process-compose-flake"
       }
     },
     "systems": {
