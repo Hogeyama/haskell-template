@@ -3,19 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils/main";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
     nix-bundle-elf.url = "github:Hogeyama/nix-bundle-elf/main";
     nix-bundle-elf.inputs.nixpkgs.follows = "nixpkgs";
-    nix-bundle-elf.inputs.flake-utils.follows = "flake-utils";
+    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
   };
 
-  outputs = { nixpkgs, flake-utils, nix-bundle-elf, ... }:
+  outputs = inputs@{ self, flake-parts, ... }:
     let
       compiler-version = "946";
-      supportedSystems = [ "x86_64-linux" ];
-
       outputs-overlay = pkgs: prev: rec {
         haskellPackages = pkgs.haskell.packages."ghc${compiler-version}".override {
           overrides = self: super: {
@@ -72,31 +70,68 @@
         };
       };
     in
-    flake-utils.lib.eachSystem supportedSystems (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ outputs-overlay ];
-        };
-      in
-      {
-        packages = {
-          default = pkgs.my-sample;
-          bundled-exe = nix-bundle-elf.lib.${system}.single-exe {
-            inherit pkgs;
-            name = "my-sample-bundled";
-            target = "${pkgs.my-sample}/bin/my-sample";
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.process-compose-flake.flakeModule
+      ];
+      systems = [ "x86_64-linux" "aarch64-linux" ];
+      perSystem = { config, lib, self', inputs', pkgs, system, ... }:
+        {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ outputs-overlay ];
           };
-          bundled-aws-lambda = nix-bundle-elf.lib.${system}.aws-lambda-zip {
-            inherit pkgs;
-            name = "my-sample-bundled";
-            target = "${pkgs.my-sample}/bin/my-sample";
+
+          packages = {
+            default = pkgs.my-sample;
+            bundled-exe = inputs.nix-bundle-elf.lib.${system}.single-exe {
+              inherit pkgs;
+              name = "my-sample-bundled";
+              target = "${pkgs.my-sample}/bin/my-sample";
+            };
+            bundled-aws-lambda = inputs.nix-bundle-elf.lib.${system}.aws-lambda-zip {
+              inherit pkgs;
+              name = "my-sample-bundled";
+              target = "${pkgs.my-sample}/bin/my-sample";
+            };
           };
+
+          devShells = {
+            default = pkgs.shell-for-my-sample;
+          };
+
+          process-compose."processes" =
+            {
+              settings = {
+                processes = {
+                  server = {
+                    command = ''
+                      ${lib.getExe pkgs.my-sample}
+                    '';
+                    readiness_probe = {
+                      period_seconds = 3;
+                      http_get = {
+                        host = "localhost";
+                        port = 3000;
+                        path = "/healthcheck";
+                      };
+                    };
+                  };
+                  test = {
+                    command = pkgs.writeShellApplication {
+                      name = "test";
+                      runtimeInputs = [ pkgs.curl ];
+                      text = ''
+                        ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
+                      '';
+                    };
+                    depends_on."server".condition = "process_healthy";
+                  };
+                };
+              };
+            };
+
+          legacyPackages = pkgs;
         };
-        devShells = {
-          default = pkgs.shell-for-my-sample;
-        };
-        legacyPackages = pkgs;
-      }
-    );
+    };
 }
