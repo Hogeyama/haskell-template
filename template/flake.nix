@@ -20,6 +20,13 @@
         haskellPackages = pkgs.haskell.packages."ghc${compiler-version}".override {
           overrides = self: super: {
             # Add dependencies here if necessary. For example:
+            scotty = self.callHackageDirect
+              {
+                pkg = "scotty";
+                ver = "0.20.1";
+                sha256 = "sha256-IqF51ZjZ1beYJApxAjAXBMlzGDvce6k2wRqzuTNK2OM=";
+              }
+              { };
             # async = pkgs.haskell.lib.overrideCabal
             #   (self.callHackageDirect
             #     {
@@ -154,6 +161,7 @@
                         path = "/healthcheck";
                       };
                     };
+                    depends_on."postgres".condition = "process_healthy";
                   };
                   postgres = {
                     namespace = "default";
@@ -190,7 +198,7 @@
                     namespace = "test";
                     command = pkgs.writeShellApplication {
                       name = "test";
-                      runtimeInputs = [ pkgs.curl ];
+                      runtimeInputs = [ pkgs.curl pkgs.jq ];
                       text = ''
                         ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
                       '';
