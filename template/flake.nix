@@ -121,7 +121,6 @@
           process-compose."processes" =
             let
               pg_port = 5432;
-              # FLAKE_ROOT/pgdata
               get_pgdata = pkgs.writeShellApplication {
                 name = "get_pgdata";
                 runtimeInputs = [ pkgs.postgresql ];
@@ -157,7 +156,6 @@
                       name = "postgres";
                       runtimeInputs = [ pkgs.postgresql ];
                       text = ''
-                        #!/usr/bin/env bash
                         set -e
                         PGDATA=$(${lib.getExe get_pgdata})
                         if ! [[ -e "$PGDATA/PG_VERSION" ]]; then
@@ -174,7 +172,6 @@
                           name = "pg_isready";
                           runtimeInputs = [ pkgs.postgresql ];
                           text = ''
-                            #!/usr/bin/env bash
                             PGDATA=$(${lib.getExe get_pgdata})
                             pg_isready --host "$PGDATA" -U postgres
                           '';
