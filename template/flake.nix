@@ -2,7 +2,7 @@
   description = "Sample Haskell project";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/b756c485aacb5d87bfcd8d780d28816d41aa32ca";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
