@@ -9,6 +9,7 @@
     nix-bundle-elf.url = "github:Hogeyama/nix-bundle-elf/main";
     nix-bundle-elf.inputs.nixpkgs.follows = "nixpkgs";
     flake-root.url = "github:srid/flake-root";
+    devshell.url = "github:numtide/devshell";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
   };
 
@@ -74,6 +75,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.flake-root.flakeModule
+        inputs.devshell.flakeModule
         inputs.process-compose-flake.flakeModule
       ];
       systems = [ "x86_64-linux" "aarch64-linux" ];
@@ -104,8 +106,11 @@
             };
           };
 
-          devShells = {
-            default = pkgs.shell-for-my-sample;
+          devshells.default = {
+            devshell.motd = "";
+            packagesFrom = [
+              pkgs.shell-for-my-sample
+            ];
           };
 
           checks = {
