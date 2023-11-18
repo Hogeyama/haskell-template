@@ -76,7 +76,7 @@ main = do
 
 scottyApp :: ScottyT (ReaderT P.SqlBackend (LoggingT IO)) ()
 scottyApp = do
-  get "/users/:name" $ do
+  get "/users/:name" do
     name <- captureParam "name"
     tryAny (lift $ E.getBy (UniqueName name)) >>= \case
       Right Nothing -> do
@@ -87,7 +87,7 @@ scottyApp = do
       Left e -> do
         lift $ $(logError) $ tshow e
         status status500
-  post "/users/:name" $ do
+  post "/users/:name" do
     name <- captureParam "name"
     age <- queryParamM "age"
     try (lift $ E.insert $ Person name age) >>= \case
@@ -99,7 +99,7 @@ scottyApp = do
       Left e -> do
         lift $ $(logError) $ tshow e
         status status500
-  get "/users/:name/blog_posts" $ do
+  get "/users/:name/blog_posts" do
     name <- captureParam "name"
     blogPosts <- lift $ select do
       (people :& blogPosts) <-
@@ -115,7 +115,7 @@ scottyApp = do
       [ title
       | Just (BlogPost title _) <- fmap E.entityVal <$> blogPosts
       ]
-  post "/users/:name/blog_posts" $ do
+  post "/users/:name/blog_posts" do
     name <- captureParam "name"
     lift (E.getBy (UniqueName name)) >>= \case
       Nothing -> do
@@ -125,7 +125,7 @@ scottyApp = do
         title <- queryParam "title"
         _ <- lift $ E.insert $ BlogPost title userId
         text "The blog post has been created."
-  get "/healthcheck" $ do
+  get "/healthcheck" do
     liftIO $ putStrLn "healthcheck"
     json
       . object
