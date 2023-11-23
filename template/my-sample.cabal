@@ -24,12 +24,11 @@ custom-setup
 common common-options
   build-depends:
     , base
-    , esqueleto
+    , beam-core
+    , beam-migrate
+    , beam-postgres
     , monad-logger
     , http-types
-    , persistent
-    , persistent-postgresql
-    , persistent-template
     , postgresql-simple
     , rio
     , silently

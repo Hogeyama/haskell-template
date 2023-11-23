@@ -4,6 +4,9 @@ set -euxo pipefail
 # Input
 : "${HOST:=localhost:3000}"
 
+# 初期化
+psql postgres://postgres@localhost:5432/postgres <<< 'truncate table blog_posts, people;'
+
 # User投入
 curl -sSf -X POST "http://$HOST/users/taro?age=15"
 # User取得

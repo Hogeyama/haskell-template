@@ -1,142 +1,218 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE NoFieldSelectors #-}
 
 module Main (main) where
 
 import RIO hiding (logError, logInfo, (^.))
 import Prelude (putStrLn)
 
-import MyLib qualified
-
-import Control.Monad.Logger
-  ( LoggingT
-  , logError
-  , logInfo
-  , runStdoutLoggingT
-  )
 import Data.Aeson.Types (ToJSON (..), object, (.=))
-import Database.Esqueleto.Experimental
-  ( from
-  , leftJoin
-  , select
-  , table
-  , val
-  , where_
-  , (:&) (..)
+import Database.Beam qualified as B
+import Database.Beam.Migrate qualified as BM
+import Database.Beam.Migrate.Simple qualified as BMS
+import Database.Beam.Postgres (Postgres)
+import Database.Beam.Postgres qualified as BP
+import Database.Beam.Postgres.Migrate qualified as BPM
+import Database.Beam.Query
+  ( all_
+  , guard_
+  , leftJoin_
+  , references_
+  , val_
   , (==.)
-  , (?.)
-  , (^.)
   )
-import Database.Esqueleto.Experimental qualified as E
-import Database.Persist.Postgresql qualified as P
-import Database.Persist.TH
-  ( mkMigrate
-  , mkPersist
-  , persistLowerCase
-  , share
-  , sqlSettings
-  )
-import Database.PostgreSQL.Simple (SqlError (..))
-import Network.HTTP.Types.Status (status400, status500)
-import Web.Scotty.Trans as S
+import Database.Beam.Query qualified as BQ
+import Database.PostgreSQL.Simple qualified as P
+import Network.HTTP.Types.Status (status400)
+import Web.Scotty.Trans (ActionT, Parsable, ScottyT, get, json, post, status, text)
+import Web.Scotty.Trans qualified as S
 
-share
-  [mkPersist sqlSettings, mkMigrate "migrateAll"]
-  [persistLowerCase|
-    Person
-      name String
-      age Int Maybe
-      UniqueName name
-      deriving Show
-    BlogPost
-      title String
-      authorId PersonId
-      deriving Show
-  |]
+data ExampleDB f = ExampleDB
+  { person :: f (B.TableEntity PersonT)
+  , blogPost :: f (B.TableEntity BlogPostT)
+  }
+  deriving stock (Generic)
+  deriving anyclass (B.Database be)
 
-instance ToJSON Person where
-  toJSON (Person name age) =
-    object
-      [ "name" .= name
-      , "age" .= age
-      ]
+data PersonT f = Person
+  { name :: B.C f Text
+  , age :: B.C f (Maybe Int64)
+  }
+  deriving stock (Generic)
+  deriving anyclass (B.Beamable)
+
+instance B.Table PersonT where
+  newtype PrimaryKey PersonT f = PersonId
+    { name :: B.C f Text
+    }
+    deriving stock (Generic)
+    deriving anyclass (B.Beamable)
+  primaryKey p = PersonId {name = p.name}
+instance ToJSON (PersonT Identity)
+instance ToJSON (B.PrimaryKey PersonT Identity)
+deriving stock instance Show (PersonT Identity)
+deriving stock instance Show (B.PrimaryKey PersonT Identity)
+
+data BlogPostT f = BlogPost
+  { title :: B.C f Text
+  , authorName :: B.PrimaryKey PersonT f
+  }
+  deriving stock (Generic)
+  deriving anyclass (B.Beamable)
+
+instance B.Table BlogPostT where
+  data PrimaryKey BlogPostT f = BlogPostId
+    { title :: B.C f Text
+    , authorName :: B.PrimaryKey PersonT f
+    }
+    deriving stock (Generic)
+    deriving anyclass (B.Beamable)
+  primaryKey p = BlogPostId {title = p.title, authorName = p.authorName}
+instance ToJSON (BlogPostT Identity)
+instance ToJSON (B.PrimaryKey BlogPostT Identity)
+deriving stock instance Show (BlogPostT Identity)
+deriving stock instance Show (B.PrimaryKey BlogPostT Identity)
+
+initialSetup :: BMS.Migration Postgres (BMS.CheckedDatabaseSettings Postgres ExampleDB)
+initialSetup = do
+  person <-
+    BM.createTable "people"
+      $ Person
+        { name = BM.field "name" (B.varchar (Just 255)) BM.notNull BM.unique
+        , age = BM.field "age" (B.maybeType B.int)
+        }
+  blogPost <-
+    BM.createTable "blog_posts"
+      $ BlogPost
+        { title = BM.field "title" (B.varchar (Just 255)) BM.notNull
+        , authorName = PersonId $ BM.field "author_name" (B.varchar (Just 255)) BM.notNull
+        }
+  pure ExampleDB {person, blogPost}
+
+initialSetupStep
+  :: BMS.MigrationSteps
+      Postgres
+      ()
+      (BMS.CheckedDatabaseSettings Postgres ExampleDB)
+initialSetupStep = BMS.migrationStep "initial_setup" (const initialSetup)
+
+migrateDB :: P.Connection -> IO (Maybe (BMS.CheckedDatabaseSettings Postgres ExampleDB))
+migrateDB conn =
+  BP.runBeamPostgresDebug putStrLn conn
+    $ BMS.bringUpToDateWithHooks
+      (BMS.defaultUpToDateHooks {BMS.runIrreversibleHook = pure True})
+      BPM.migrationBackend
+      initialSetupStep
 
 main :: IO ()
 main = do
-  let connStr = "host=localhost dbname=postgres user=postgres port=5432"
-  runStdoutLoggingT
-    . P.withPostgresqlConn connStr
-    $ runReaderT do
-      u <- askUnliftIO
-      $(logInfo) "Running migrations..."
-      P.runMigration migrateAll
-      $(logInfo) "Starting the server..."
-      scottyT 3000 (unliftIO u) scottyApp
+  let connInfo =
+        P.ConnectInfo
+          { connectHost = "localhost"
+          , connectPort = 5432
+          , connectUser = "postgres"
+          , connectPassword = ""
+          , connectDatabase = "postgres"
+          }
+  P.withConnect connInfo $ \conn -> do
+    migrateDB conn >>= \case
+      Nothing -> putStrLn "Migration failed"
+      Just db' -> do
+        let db = BMS.unCheckDatabase db'
+        S.scottyT 3000 id $ scottyApp conn db
 
-scottyApp :: ScottyT (ReaderT P.SqlBackend (LoggingT IO)) ()
-scottyApp = do
+scottyApp :: P.Connection -> B.DatabaseSettings Postgres ExampleDB -> ScottyT IO ()
+scottyApp conn db = do
   get "/users/:name" do
-    name <- captureParam "name"
-    tryAny (lift $ E.getBy (UniqueName name)) >>= \case
-      Right Nothing -> do
-        text "The user does not exist."
+    name :: Text <- S.captureParam "name"
+    p <- lift
+      . BP.runBeamPostgresDebug putStrLn conn
+      . BQ.runSelectReturningOne
+      . BQ.select
+      $ do
+        p <- all_ db.person
+        guard_ $ p.name ==. val_ name
+        pure p
+    case p of
+      Nothing -> do
         status status400
-      Right (Just (P.Entity _ person)) -> do
-        json person
-      Left e -> do
-        lift $ $(logError) $ tshow e
-        status status500
+        json $ object ["error" .= ("User not found" :: Text)]
+      Just p' -> json p'
   post "/users/:name" do
-    name <- captureParam "name"
+    name <- S.captureParam "name"
     age <- queryParamM "age"
-    try (lift $ E.insert $ Person name age) >>= \case
-      Right _ -> do
-        text $ fromString $ MyLib.hello name
-      Left SqlError {sqlState = "23505"} -> do
+    r <-
+      try
+        . lift
+        . BP.runBeamPostgresDebug putStrLn conn
+        . BQ.runInsert
+        . BQ.insert db.person
+        $ BQ.insertValues [Person {name, age}]
+    case r of
+      Right _ -> json ()
+      Left P.SqlError {sqlState = "23505"} -> do
         text "The name is already taken."
         status status400
-      Left e -> do
-        lift $ $(logError) $ tshow e
-        status status500
+      Left e -> throwIO e
   get "/users/:name/blog_posts" do
-    name <- captureParam "name"
-    blogPosts <- lift $ select do
-      (people :& blogPosts) <-
-        from
-          $ table @Person
-          `leftJoin` table @BlogPost
-          `E.on` ( \(people :& blogPosts) ->
-                    E.just (people ^. PersonId) ==. blogPosts ?. BlogPostAuthorId
-                 )
-      where_ $ people ^. PersonName ==. val name
-      pure blogPosts
-    json
-      [ title
-      | Just (BlogPost title _) <- fmap E.entityVal <$> blogPosts
-      ]
+    name <- S.captureParam "name"
+    bs <- lift
+      . BP.runBeamPostgresDebug putStrLn conn
+      . BQ.runSelectReturningList
+      . BQ.select
+      $ do
+        p <- all_ db.person
+        b <-
+          leftJoin_
+            (all_ db.blogPost)
+            (\b -> b.authorName `references_` p)
+        guard_ $ p.name ==. val_ name
+        pure b
+    json $ [b.title | Just b <- bs]
   post "/users/:name/blog_posts" do
-    name <- captureParam "name"
-    lift (E.getBy (UniqueName name)) >>= \case
-      Nothing -> do
-        text "The user does not exist."
+    name <- S.captureParam "name"
+    title <- S.queryParam "title"
+    p <- lift
+      . BP.runBeamPostgresDebug putStrLn conn
+      . BQ.runSelectReturningOne
+      . BQ.select
+      $ do
+        p <- all_ db.person
+        guard_ $ p.name ==. val_ name
+        pure p
+    if isNothing p
+      then do
         status status400
-      Just (P.Entity userId _) -> do
-        title <- queryParam "title"
-        _ <- lift $ E.insert $ BlogPost title userId
-        text "The blog post has been created."
+        json $ object ["error" .= ("User not found" :: Text)]
+      else do
+        r <-
+          try
+            . lift
+            . BP.runBeamPostgresDebug putStrLn conn
+            . BQ.runInsert
+            . BQ.insert db.blogPost
+            $ BQ.insertValues [BlogPost {title, authorName = PersonId name}]
+        case r of
+          Right _ -> json ()
+          Left P.SqlError {sqlState = "23505"} -> do
+            text "The user already has a blog post with the same title."
+            status status400
+          Left e -> throwIO e
+    json ()
   get "/healthcheck" do
     liftIO $ putStrLn "healthcheck"
     json
       . object
-      $ [ "status" ..= "ok"
-        ]
+      $ ["status" ..= "ok"]
   where
     k ..= (v :: Text) = k .= v
     queryParamM
       :: (Parsable a)
       => LText
-      -> ActionT (ReaderT P.SqlBackend (LoggingT IO)) (Maybe a)
+      -> ActionT IO (Maybe a)
     queryParamM p =
       fmap Just (S.queryParam p)
-        `rescue` \(_ :: SomeException) -> pure Nothing
+        `S.rescue` \(_ :: SomeException) -> pure Nothing
