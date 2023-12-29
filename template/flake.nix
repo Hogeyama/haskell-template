@@ -122,11 +122,12 @@
 
           checks = {
             integration-test = pkgs.runCommand "integration-test" { } ''
+              mkdir -p $out
               ${lib.getExe self'.packages.process-compose} \
                 -t=false \
                 -n=dev \
-                -n=test
-              mkdir -p $out
+                -n=test \
+                | tee $out/log
             '';
           };
 
@@ -198,7 +199,7 @@
                     namespace = "test";
                     command = pkgs.writeShellApplication {
                       name = "test";
-                      runtimeInputs = [ pkgs.curl pkgs.jq ];
+                      runtimeInputs = [ pkgs.curl pkgs.jq pkgs.postgresql ];
                       text = ''
                         ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
                       '';
