@@ -105,12 +105,6 @@
               name = "my-sample-bundled";
               target = "${pkgs.my-sample}/bin/my-sample";
             };
-            process-compose = pkgs.writeShellApplication {
-              name = "process-compose";
-              text = ''
-                exec ${lib.getExe self'.packages.processes} -n default "$@"
-              '';
-            };
           };
 
           devshells.default = {
@@ -120,69 +114,39 @@
             ];
           };
 
-          checks = {
-            integration-test = pkgs.runCommand "integration-test" { } ''
-              mkdir -p $out
-              ${lib.getExe self'.packages.process-compose} \
-                -t=false \
-                -n=dev \
-                -n=test \
-                | tee $out/log
-            '';
-          };
-
-          process-compose."processes" =
+          process-compose =
             let
-              pg_port = 5432;
-              get_pgdata = pkgs.writeShellApplication {
-                name = "get_pgdata";
-                runtimeInputs = [ pkgs.postgresql ];
-                text = ''
-                  ROOT=$(${lib.getExe config.flake-root.package} 2>/dev/null || true)
-                  ROOT=''${ROOT:-"$PWD"}
-                  PGDATA=$ROOT/pgdata
-                  echo "$PGDATA"
-                '';
-              };
-            in
-            {
               port = 12345;
-              settings = {
-                processes = {
-                  server = {
-                    namespace = "dev";
-                    command = ''
-                      ${lib.getExe pkgs.my-sample}
+              postgres =
+                let
+                  pg_port = 5432;
+                  get_pgdata = pkgs.writeShellApplication {
+                    name = "get_pgdata";
+                    text = ''
+                      ROOT=$(${lib.getExe config.flake-root.package} 2>/dev/null || true)
+                      PGDATA=''${ROOT:-"$PWD"}/pgdata
+                      echo "$PGDATA"
                     '';
-                    readiness_probe = {
-                      period_seconds = 3;
-                      http_get = {
-                        host = "localhost";
-                        port = 3000;
-                        path = "/healthcheck";
-                      };
-                    };
-                    depends_on."postgres".condition = "process_healthy";
                   };
-                  postgres = {
-                    namespace = "default";
-                    command = pkgs.writeShellApplication {
-                      name = "postgres";
-                      runtimeInputs = [ pkgs.postgresql ];
-                      text = ''
-                        set -e
-                        PGDATA=$(${lib.getExe get_pgdata})
-                        if ! [[ -e "$PGDATA/PG_VERSION" ]]; then
-                            mkdir -p "$PGDATA"
-                            initdb -U postgres -D "$PGDATA" -A trust
-                        fi
-                        postgres -D "$PGDATA" -k "$PGDATA" -p ${toString pg_port}
-                      '';
-                    };
-                    readiness_probe = {
-                      period_seconds = 1;
-                      exec = {
-                        command = "${lib.getExe (pkgs.writeShellApplication {
+                in
+                {
+                  command = pkgs.writeShellApplication {
+                    name = "postgres";
+                    runtimeInputs = [ pkgs.postgresql ];
+                    text = ''
+                      set -e
+                      PGDATA=$(${lib.getExe get_pgdata})
+                      if ! [[ -e "$PGDATA/PG_VERSION" ]]; then
+                          mkdir -p "$PGDATA"
+                          initdb -U postgres -D "$PGDATA" -A trust
+                      fi
+                      postgres -D "$PGDATA" -k "$PGDATA" -p ${toString pg_port}
+                    '';
+                  };
+                  readiness_probe = {
+                    period_seconds = 1;
+                    exec = {
+                      command = "${lib.getExe (pkgs.writeShellApplication {
                           name = "pg_isready";
                           runtimeInputs = [ pkgs.postgresql ];
                           text = ''
@@ -190,23 +154,51 @@
                             pg_isready --host "$PGDATA" -U postgres
                           '';
                         })}";
-                      };
                     };
                   };
-                  # testというkeyで作ると自動でflake checkが作成されるが、
-                  # 現状カスタマイズ性が低いので別名で作って自前のcheckを用意することにする。
-                  integration-test = {
-                    namespace = "test";
-                    command = pkgs.writeShellApplication {
-                      name = "test";
-                      runtimeInputs = [ pkgs.curl pkgs.jq pkgs.postgresql ];
-                      text = ''
-                        ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
-                      '';
-                    };
-                    availability.exit_on_end = true;
-                    depends_on."server".condition = "process_healthy";
+                };
+              server = {
+                command = ''
+                  ${lib.getExe pkgs.my-sample}
+                '';
+                readiness_probe = {
+                  period_seconds = 3;
+                  http_get = {
+                    host = "localhost";
+                    port = 3000;
+                    path = "/healthcheck";
                   };
+                };
+                depends_on."postgres".condition = "process_healthy";
+              };
+              # testというkeyで作ると自動でflake checkが作成される
+              test = {
+                namespace = "check";
+                command = pkgs.writeShellApplication {
+                  name = "test";
+                  runtimeInputs = [ pkgs.curl pkgs.jq pkgs.postgresql ];
+                  text = ''
+                    ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
+                  '';
+                };
+                availability.exit_on_end = true;
+                depends_on."server".condition = "process_healthy";
+              };
+            in
+            {
+              # `nix flake check` でテストを実行する。あるいは
+              # `nix run .#processes-full -- -n default` でpostgresとserverを起動する
+              processes-full = {
+                inherit port;
+                settings.processes = {
+                  inherit postgres server test;
+                };
+              };
+              # `nix run .#processes-dev` でpostgresを起動する
+              processes-dev = {
+                inherit port;
+                settings.processes = {
+                  inherit postgres;
                 };
               };
             };
