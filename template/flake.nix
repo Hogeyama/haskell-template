@@ -112,6 +112,18 @@
             packagesFrom = [
               pkgs.shell-for-my-sample
             ];
+            commands = [
+              {
+                name = "run-server";
+                help = "Run the server with postgres";
+                command = ''nix run .#processes-full -- -n default "$@"'';
+              }
+              {
+                name = "run-postgres";
+                help = "Run postgres";
+                command = ''nix run .#processes-dev -- "$@"'';
+              }
+            ];
           };
 
           process-compose =
