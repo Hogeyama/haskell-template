@@ -1,6 +1,9 @@
 { pkgs, ... }:
 let
-  cmd-shell = contents: [ "CMD-SHELL" contents ];
+  cmd-shell = contents: [
+    "CMD-SHELL"
+    contents
+  ];
 in
 {
   config.project.name = "webapp";
@@ -34,7 +37,10 @@ in
       service.depends_on = {
         webserver.condition = "service_healthy";
       };
-      service.command = [ "bash" "${./test/integration/test.bash}" ];
+      service.command = [
+        "bash"
+        "${./test/integration/test.bash}"
+      ];
       service.environment = {
         "HOST" = "webserver:3000";
       };
@@ -48,5 +54,3 @@ in
     };
   };
 }
-
-

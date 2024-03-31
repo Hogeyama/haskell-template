@@ -13,20 +13,19 @@
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
   };
 
-  outputs = inputs@{ self, flake-parts, ... }:
+  outputs =
+    inputs@{ self, flake-parts, ... }:
     let
       compiler-version = "946";
       outputs-overlay = pkgs: prev: rec {
         haskellPackages = pkgs.haskell.packages."ghc${compiler-version}".override {
           overrides = self: super: {
             # Add dependencies here if necessary. For example:
-            scotty = self.callHackageDirect
-              {
-                pkg = "scotty";
-                ver = "0.20.1";
-                sha256 = "sha256-IqF51ZjZ1beYJApxAjAXBMlzGDvce6k2wRqzuTNK2OM=";
-              }
-              { };
+            scotty = self.callHackageDirect {
+              pkg = "scotty";
+              ver = "0.20.1";
+              sha256 = "sha256-IqF51ZjZ1beYJApxAjAXBMlzGDvce6k2wRqzuTNK2OM=";
+            } { };
             # async = pkgs.haskell.lib.overrideCabal
             #   (self.callHackageDirect
             #     {
@@ -55,12 +54,10 @@
               "LICENSE"
             ];
           in
-          pkgs.lib.trivial.pipe
-            (haskellPackages.callCabal2nix "my-sample" src { })
-            [
-              pkgs.haskell.lib.justStaticExecutables
-              pkgs.haskell.lib.doBenchmark
-            ];
+          pkgs.lib.trivial.pipe (haskellPackages.callCabal2nix "my-sample" src { }) [
+            pkgs.haskell.lib.justStaticExecutables
+            pkgs.haskell.lib.doBenchmark
+          ];
         shell-for-my-sample = haskellPackages.shellFor {
           packages = _: [ my-sample ];
           buildInputs = with pkgs; [
@@ -70,9 +67,7 @@
             haskellPackages.fourmolu
             haskellPackages.hlint
             haskellPackages.weeder
-            (haskell-language-server.override {
-              supportedGhcVersions = [ compiler-version ];
-            })
+            (haskell-language-server.override { supportedGhcVersions = [ compiler-version ]; })
           ];
           withHoogle = true;
           doBenchmark = true;
@@ -85,8 +80,20 @@
         inputs.devshell.flakeModule
         inputs.process-compose-flake.flakeModule
       ];
-      systems = [ "x86_64-linux" "aarch64-linux" ];
-      perSystem = { config, lib, self', inputs', pkgs, system, ... }:
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      perSystem =
+        {
+          config,
+          lib,
+          self',
+          inputs',
+          pkgs,
+          system,
+          ...
+        }:
         {
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
@@ -109,9 +116,7 @@
 
           devshells.default = {
             devshell.motd = "";
-            packagesFrom = [
-              pkgs.shell-for-my-sample
-            ];
+            packagesFrom = [ pkgs.shell-for-my-sample ];
             commands = [
               {
                 name = "run-server";
@@ -158,14 +163,16 @@
                   readiness_probe = {
                     period_seconds = 1;
                     exec = {
-                      command = "${lib.getExe (pkgs.writeShellApplication {
+                      command = "${lib.getExe (
+                        pkgs.writeShellApplication {
                           name = "pg_isready";
                           runtimeInputs = [ pkgs.postgresql ];
                           text = ''
                             PGDATA=$(${lib.getExe get_pgdata})
                             pg_isready --host "$PGDATA" -U postgres
                           '';
-                        })}";
+                        }
+                      )}";
                     };
                   };
                 };
@@ -188,7 +195,11 @@
                 namespace = "check";
                 command = pkgs.writeShellApplication {
                   name = "test";
-                  runtimeInputs = [ pkgs.curl pkgs.jq pkgs.postgresql ];
+                  runtimeInputs = [
+                    pkgs.curl
+                    pkgs.jq
+                    pkgs.postgresql
+                  ];
                   text = ''
                     ${lib.getExe pkgs.bash} ${./test/integration/test.bash}
                   '';
