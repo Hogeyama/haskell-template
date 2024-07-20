@@ -63,7 +63,7 @@
           buildInputs = with pkgs; [
             arion
             cabal-install
-            haskellPackages.cabal-fmt
+            haskellPackages.cabal-fmt.bin
             haskellPackages.fourmolu
             haskellPackages.hlint
             haskellPackages.weeder
