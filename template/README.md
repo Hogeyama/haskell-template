@@ -8,7 +8,10 @@
 
 ## Repogitory setup
 
-* Create git repogitory using this template
+* Initialize flake project using this template
+  ```
+  nix flake init -t github.com/Hogeyama/haskell-template
+  ```
 * `mv ./my-sample.cabal ./<your-package>.cabal`
 * `find . -type f -not -path '*/.*' | xargs sed -i -e 's/my-sample/<your-package>/g'`
 * Update README
